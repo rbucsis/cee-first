@@ -1,2 +1,5 @@
 server/venv
-server/_pycache_
+__pycache__
+sever/__pycache__
+server/*/__pycache__
+server/.env
