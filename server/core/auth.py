@@ -1,13 +1,17 @@
-
-
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from firebase_admin import auth as firebase_auth
+import firebase_admin
 from psycopg import AsyncConnection
-from database import get_db_connection
+from .database import get_db_connection
 import os
 from dotenv import load_dotenv
 load_dotenv()
+
+if not firebase_admin._apps:
+    print('Initializing Firebase')
+    cred = firebase_admin.credentials.Certificate(os.getenv('SERVICE_ACCOUNT_JSON_PATH'))
+    firebase_admin.initialize_app(cred)
 
 SECRET = os.getenv('SECRET')
 security = HTTPBearer()

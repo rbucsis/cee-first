@@ -3,3 +3,4 @@ __pycache__
 sever/__pycache__
 server/*/__pycache__
 server/.env
+server/core/user-manager.json
