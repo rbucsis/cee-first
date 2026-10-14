@@ -154,7 +154,7 @@ async def delete_student(
     current_user: dict = Depends(get_current_user),
     db: AsyncConnection = Depends(get_db_connection),
 ):
-    """Soft deletes a student by setting record_status to 'Inactive'."""
+    """Deletes a Student."""
     user_id_str = str(current_user["id"])
 
     async with db.cursor() as cur:

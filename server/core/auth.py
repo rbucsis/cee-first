@@ -6,7 +6,13 @@ from psycopg import AsyncConnection
 from .database import get_db_connection
 import os
 from dotenv import load_dotenv
+import requests
+from jwt.algorithms import RSAAlgorithm
+
 load_dotenv()
+
+JWKS_URL = f"https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"
+google_public_keys = {}
 
 if not firebase_admin._apps:
     print('Initializing Firebase')
@@ -51,3 +57,14 @@ async def get_current_user(
         )
 
     return user
+
+def get_google_public_keys():
+    global google_public_keys
+    if not google_public_keys:
+        print('Fetching Keys')
+        res = requests.get(JWKS_URL)
+        jwks = res.json()
+        # Convert Google's JWK set to RSA public keys
+        for key in jwks["keys"]:
+            google_public_keys[key["kid"]] = RSAAlgorithm.from_jwk(key)
+    return google_public_keys

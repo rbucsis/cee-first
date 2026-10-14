@@ -25,3 +25,6 @@ class StudentResponse(BaseModel):
     last_name: Optional[str] = None
     birthdate: Optional[date] = None
     enroll_date: date
+    created_utc: datetime
+    updated_utc: datetime
+    record_status: str

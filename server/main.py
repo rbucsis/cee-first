@@ -3,7 +3,7 @@ from fastapi import FastAPI
 import core.auth as security
 import core.config as config
 import core.database as db
-from routers import auth, students
+from routers import auth, students, contacts, student_contacts, health
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -21,9 +21,6 @@ app = FastAPI(
 
 app.include_router(auth.router)
 app.include_router(students.router)
-
-@app.get("/health")
-async def health_check():
-    return {
-        "status": "healthy"
-    }
+app.include_router(contacts.router)
+app.include_router(student_contacts.router)
+app.include_router(health.router)
