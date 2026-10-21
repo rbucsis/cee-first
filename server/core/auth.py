@@ -23,9 +23,17 @@ SECRET = os.getenv('SECRET')
 security = HTTPBearer()
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    # credentials: HTTPAuthorizationCredentials = Depends(security),
     db: AsyncConnection = Depends(get_db_connection)
 ) -> dict:
+
+    #TEMPORARY BYPASS
+    return {
+        "id": "1f1a0875-63ea-4505-9801-d49cd0a63372",
+        "email": "rbucsis@bucsisdigital.ca",
+        "role": "ADMIN"
+    }
+
     token = credentials.credentials
     
     try:

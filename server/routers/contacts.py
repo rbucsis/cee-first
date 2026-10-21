@@ -79,12 +79,18 @@ async def list_contacts(
 
 @router.get("/contacts/{contact_id}", response_model=ContactResponse)
 async def get_contact(
-    contact_id: UUID,
+    contact_id: str,
     current_user: dict = Depends(get_current_user),
     db: AsyncConnection = Depends(get_db_connection),
 ):
     """Fetches a specific contact record by ID."""
     async with db.cursor() as cur:
+
+        try:
+            contact_id = UUID(contact_id)
+        except:
+            raise HTTPException(422, "Contact not found.")
+        
         await cur.execute(
             """
             SELECT id, center_id, first_name, last_name, email, phone, created_utc, updated_utc, record_status

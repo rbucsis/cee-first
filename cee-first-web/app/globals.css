@@ -1,26 +1,120 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Define theme tokens directly for Tailwind v4 */
+@theme {
+  --color-app: var(--bg-app);
+  --color-nav: var(--bg-nav);
+  --color-nav-text: var(--text-nav);
+  --color-surface: var(--bg-surface);
+  --color-main: var(--text-main);
+  --color-muted: var(--text-muted);
+  --color-border-custom: var(--border-color);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Default Theme: Spring Light */
+:root,
+[data-theme="spring-light"] {
+  --bg-app: #f8fafc;
+  --bg-nav: #0f172b;
+  --text-nav: #cad5e2;
+  --bg-surface: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --primary: #10b981;
+  --primary-hover: #059669;
+  --border-color: #e2e8f0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Spring Dark */
+[data-theme="spring-dark"] {
+  --bg-app: #0f172a;
+  --bg-nav: #0f172b;
+  --text-nav: #cad5e2;
+  --bg-surface: #1e293b;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --primary: #34d399;
+  --primary-hover: #10b981;
+  --border-color: #334155;
+}
+
+[data-theme="summer-light"] {
+  --bg-app: #f8fafc;
+  --bg-nav: #0f172b;
+  --text-nav: #cad5e2;
+  --bg-surface: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --primary: #10b981;
+  --primary-hover: #059669;
+  --border-color: #e2e8f0;
+}
+
+/* Spring Dark */
+[data-theme="summer-dark"] {
+  --bg-app: #0f172a;
+  --bg-nav: #0f172b;
+  --text-nav: #cad5e2;
+  --bg-surface: #1e293b;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --primary: #34d399;
+  --primary-hover: #10b981;
+  --border-color: #334155;
+}
+
+/* Fall Light */
+[data-theme="fall-light"] {
+  --bg-app: #fef3c7;
+  --bg-nav: #451a03;
+  --text-nav: #f8fafc;
+  --text-main: #451a03;
+  --text-muted: #78350f;
+  --primary: #d97706;
+  --primary-hover: #b45309;
+  --border-color: #fde68a;
+}
+
+[data-theme="fall-dark"] {
+  --bg-app: #fef3c7;
+  --bg-nav: #451a03;
+  --text-nav: #f8fafc;
+  --text-main: #451a03;
+  --text-muted: #78350f;
+  --primary: #d97706;
+  --primary-hover: #b45309;
+  --border-color: #fde68a;
+}
+
+[data-theme="winter-light"] {
+  --bg-app: #0b132b;
+  --bg-nav: #0f172b;
+  --text-nav: #cad5e2;
+  --bg-surface: #1c2541;
+  --text-main: #edf2f4;
+  --text-muted: #8d99ae;
+  --primary: #3a86ff;
+  --primary-hover: #2563eb;
+  --border-color: #2a385b;
+}
+
+/* Winter Dark */
+[data-theme="winter-dark"] {
+  --bg-app: #0b132b;
+  --bg-nav: #0f172b;
+  --text-nav: #cad5e2;
+  --bg-surface: #1c2541;
+  --text-main: #edf2f4;
+  --text-muted: #8d99ae;
+  --primary: #3a86ff;
+  --primary-hover: #2563eb;
+  --border-color: #2a385b;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background-color: var(--bg-app);
+  color: var(--text-main);
   font-family: Arial, Helvetica, sans-serif;
 }
