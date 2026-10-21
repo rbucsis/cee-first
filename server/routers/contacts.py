@@ -165,7 +165,7 @@ async def delete_contact(
         await cur.execute(
             """
             UPDATE cee_dev.contacts
-            SET record_status = 'Inactive', updated_by = %s
+            SET record_status = 'Deleted', updated_by = %s
             WHERE id = %s AND record_status = 'Active';
             """,
             (user_id_str, contact_id),

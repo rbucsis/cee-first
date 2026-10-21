@@ -12,6 +12,9 @@ export default function Navbar() {
           <Link href="/contacts" className="hover:text-white transition-colors">
             Contacts & Family
           </Link>
+          <Link href="/groups" className="hover:text-white transition-colors">
+            Groups
+          </Link>
         </div>
       </div>
       <div className="text-xs text-slate-400 bg-slate-800 px-3 py-1.5 rounded-full">

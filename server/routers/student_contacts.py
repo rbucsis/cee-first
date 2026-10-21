@@ -210,7 +210,7 @@ async def delete_student_contact_link(
         await cur.execute(
             """
             UPDATE cee_dev.student_contacts
-            SET record_status = 'Inactive', updated_by = %s
+            SET record_status = 'Deleted', updated_by = %s
             WHERE id = %s AND record_status = 'Active';
             """,
             (user_id_str, link_id),

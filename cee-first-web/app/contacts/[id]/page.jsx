@@ -135,6 +135,7 @@ export default function ContactDetailPage() {
                         </Button>
                       </div>
                   </form>
+                  <hr className='h-[2px] my-8 bg-primary border-0 rounded'/>
                   <div className='flex flex-col md:flex-row flex-wrap m-auto'>
                       <div className='md:w-1/2 p-2'>
                         <RelatedStudents contact={contact} />

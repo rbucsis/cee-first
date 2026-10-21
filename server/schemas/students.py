@@ -9,6 +9,7 @@ class StudentCreate(BaseModel):
     last_name: Optional[str] = Field(None, max_length=100)
     birthdate: Optional[date] = None
     enroll_date: date = Field(default_factory=date.today)
+    group_id: Optional[UUID] = None
 
 
 class StudentUpdate(BaseModel):
@@ -16,6 +17,7 @@ class StudentUpdate(BaseModel):
     last_name: Optional[str] = Field(None, max_length=100)
     birthdate: Optional[date] = None
     enroll_date: Optional[date] = None
+    group_id: Optional[UUID] = None
 
 
 class StudentResponse(BaseModel):
@@ -25,6 +27,7 @@ class StudentResponse(BaseModel):
     last_name: Optional[str] = None
     birthdate: Optional[date] = None
     enroll_date: date
+    group_id: Optional[UUID] = None
     created_utc: datetime
     updated_utc: datetime
     record_status: str

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from psycopg import AsyncConnection
@@ -32,12 +32,13 @@ async def create_student(
                 first_name, 
                 last_name, 
                 birthdate, 
-                enroll_date, 
+                enroll_date,
+                group_id,
                 created_by, 
                 updated_by
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-            RETURNING id, center_id, first_name, last_name, birthdate, enroll_date, created_utc, updated_utc, record_status;
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id, center_id, first_name, last_name, birthdate, enroll_date, group_id, created_utc, updated_utc, record_status;
             """,
             (
                 center_id,
@@ -45,6 +46,7 @@ async def create_student(
                 payload.last_name,
                 payload.birthdate,
                 payload.enroll_date,
+                payload.group_id,
                 user_id_str,
                 user_id_str,
             ),
@@ -59,14 +61,33 @@ async def create_student(
 )
 async def list_students(
     center_id: UUID,
+    group_id: Optional[UUID] = None,
     current_user: dict = Depends(get_current_user),
     db: AsyncConnection = Depends(get_db_connection),
 ):
     """Fetches all active students enrolled at a specific center."""
+
+    query = """
+        SELECT id, center_id, first_name, last_name, birthdate, enroll_date, group_id, created_utc, updated_utc, record_status
+        FROM cee_dev.students
+        WHERE center_id = %s AND record_status = 'Active'
+    """
+
+    params = [ center_id, ]
+
+    if group_id:
+        query += """
+            AND group_id = %s
+        """
+        params.append(group_id)
+
+    query += """
+        ORDER BY first_name ASC, last_name ASC;
+    """
     async with db.cursor() as cur:
         await cur.execute(
             """
-            SELECT id, center_id, first_name, last_name, birthdate, enroll_date, created_utc, updated_utc, record_status
+            SELECT id, center_id, first_name, last_name, birthdate, enroll_date, group_id, created_utc, updated_utc, record_status
             FROM cee_dev.students
             WHERE center_id = %s AND record_status = 'Active'
             ORDER BY first_name ASC, last_name ASC;
@@ -88,7 +109,7 @@ async def get_student(
     async with db.cursor() as cur:
         await cur.execute(
             """
-            SELECT id, center_id, first_name, last_name, birthdate, enroll_date, created_utc, updated_utc, record_status
+            SELECT id, center_id, first_name, last_name, birthdate, enroll_date, group_id, created_utc, updated_utc, record_status
             FROM cee_dev.students
             WHERE id = %s AND record_status = 'Active';
             """,
@@ -134,7 +155,7 @@ async def update_student(
             UPDATE cee_dev.students
             SET {sql_set}
             WHERE id = %s AND record_status = 'Active'
-            RETURNING id, center_id, first_name, last_name, birthdate, enroll_date, created_utc, updated_utc, record_status;
+            RETURNING id, center_id, first_name, last_name, birthdate, enroll_date, group_id, created_utc, updated_utc, record_status;
             """,
             values,
         )
@@ -161,7 +182,7 @@ async def delete_student(
         await cur.execute(
             """
             UPDATE cee_dev.students
-            SET record_status = 'Inactive', updated_by = %s
+            SET record_status = 'Deleted', updated_by = %s
             WHERE id = %s AND record_status = 'Active';
             """,
             (user_id_str, student_id),

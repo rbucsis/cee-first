@@ -39,6 +39,7 @@ export default function StudentDetailPage() {
             last_name: payload.last_name || null,
             birthday: payload.birthday || null,
             enroll_date: payload.enroll_date,
+            group_id: payload.group_id || null
         };
         try {
             await apiFetch('/api/v1'+window.location.pathname, {
@@ -116,7 +117,7 @@ export default function StudentDetailPage() {
                         />
                       </div>
                       <div className='md:w-1/2 p-2'>
-                        <label className="block text-xs font-semibold text-muted mb-1">Enrolled On</label>
+                        <label className="block text-xs font-semibold text-muted mb-1">Enrolled On *</label>
                         <input
                             name='enroll_date'
                             type="date"
@@ -126,7 +127,17 @@ export default function StudentDetailPage() {
                             className="w-full border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
                         />
                       </div>
-                      <div className='p-2'>
+                      <div className='md:w-1/2 p-2'>
+                        <label className="block text-xs font-semibold text-muted mb-1">Group</label>
+                        <input
+                            name='group_id'
+                            type="text"
+                            value={form?.group_id || ""}
+                            onChange={handleChange}
+                            className="w-full border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                        />
+                      </div>
+                      <div className='w-full p-2'>
                         <Button
                             type="submit"
                             disabled={isNotChanged()}
@@ -135,6 +146,7 @@ export default function StudentDetailPage() {
                         </Button>
                       </div>
                   </form>
+                  <hr className='h-[2px] my-8 bg-primary border-0 rounded'/>
                   <div className='flex flex-col md:flex-row flex-wrap m-auto'>
                       <div className='md:w-1/2 p-2'>
                         <RelatedContacts student={student} />
