@@ -42,7 +42,7 @@ async def register_account(
                     RETURNING id;
                     """,
                     (
-                        payload.center_name, payload.address_1, payload.address_2 or "",
+                        payload.center_name, payload.address_1, payload.address,
                         payload.city, payload.province, payload.postal_code,
                         payload.email, payload.phone
                     )

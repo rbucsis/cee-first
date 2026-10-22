@@ -30,6 +30,8 @@ async def get_current_user(
     #TEMPORARY BYPASS
     return {
         "id": "1f1a0875-63ea-4505-9801-d49cd0a63372",
+        "center_id": "",
+        "org_id": "",
         "email": "rbucsis@bucsisdigital.ca",
         "role": "ADMIN"
     }

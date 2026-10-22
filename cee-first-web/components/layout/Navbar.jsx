@@ -15,6 +15,9 @@ export default function Navbar() {
           <Link href="/groups" className="hover:text-white transition-colors">
             Groups
           </Link>
+          <Link href="/team" className="hover:text-white transition-colors">
+            Team
+          </Link>
         </div>
       </div>
       <div className="text-xs text-slate-400 bg-slate-800 px-3 py-1.5 rounded-full">
