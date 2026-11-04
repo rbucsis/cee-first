@@ -34,11 +34,14 @@ async def create_student(
                 birthdate, 
                 enroll_date,
                 group_id,
+                diet_notes,
+                medical_notes,
+                notes,
                 created_by, 
                 updated_by
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            RETURNING id, center_id, first_name, last_name, birthdate, enroll_date, group_id, created_utc, updated_utc, record_status;
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id, center_id, first_name, last_name, birthdate, enroll_date, group_id, diet_notes, medical_notes, notes, created_utc, updated_utc, record_status;
             """,
             (
                 center_id,
@@ -47,6 +50,9 @@ async def create_student(
                 payload.birthdate,
                 payload.enroll_date,
                 payload.group_id,
+                payload.diet_notes,
+                payload.medical_notes,
+                payload.notes,
                 user_id_str,
                 user_id_str,
             ),
@@ -87,7 +93,7 @@ async def list_students(
     async with db.cursor() as cur:
         await cur.execute(
             """
-            SELECT id, center_id, first_name, last_name, birthdate, enroll_date, group_id, created_utc, updated_utc, record_status
+            SELECT id, center_id, first_name, last_name, birthdate, enroll_date, group_id, diet_notes, medical_notes, notes, created_utc, updated_utc, record_status
             FROM cee_dev.students
             WHERE center_id = %s AND record_status = 'Active'
             ORDER BY first_name ASC, last_name ASC;
@@ -109,7 +115,7 @@ async def get_student(
     async with db.cursor() as cur:
         await cur.execute(
             """
-            SELECT id, center_id, first_name, last_name, birthdate, enroll_date, group_id, created_utc, updated_utc, record_status
+            SELECT id, center_id, first_name, last_name, birthdate, enroll_date, group_id, diet_notes, medical_notes, notes, created_utc, updated_utc, record_status
             FROM cee_dev.students
             WHERE id = %s AND record_status = 'Active';
             """,
@@ -155,7 +161,7 @@ async def update_student(
             UPDATE cee_dev.students
             SET {sql_set}
             WHERE id = %s AND record_status = 'Active'
-            RETURNING id, center_id, first_name, last_name, birthdate, enroll_date, group_id, created_utc, updated_utc, record_status;
+            RETURNING id, center_id, first_name, last_name, birthdate, enroll_date, group_id, diet_notes, medical_notes, notes, created_utc, updated_utc, record_status;
             """,
             values,
         )

@@ -4,7 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import core.auth as security
 import core.config as config
 import core.database as db
-from routers import auth, students, contacts, student_contacts, health, groups, team
+import core.storage as store
+from routers import auth, students, contacts, student_contacts, health, groups, team, files
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -40,3 +41,4 @@ app.include_router(student_contacts.router)
 app.include_router(health.router)
 app.include_router(groups.router)
 app.include_router(team.router)
+app.include_router(files.router)

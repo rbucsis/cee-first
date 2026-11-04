@@ -10,6 +10,10 @@ class StudentCreate(BaseModel):
     birthdate: Optional[date] = None
     enroll_date: date = Field(default_factory=date.today)
     group_id: Optional[UUID] = None
+    diet_notes: Optional[str] = Field(None, max_length=500)
+    medical_notes: Optional[str] = Field(None, max_length=500)
+    notes: Optional[str] = Field(None, max_length=500)
+    
 
 
 class StudentUpdate(BaseModel):
@@ -18,6 +22,9 @@ class StudentUpdate(BaseModel):
     birthdate: Optional[date] = None
     enroll_date: Optional[date] = None
     group_id: Optional[UUID] = None
+    diet_notes: Optional[str] = Field(None, max_length=500)
+    medical_notes: Optional[str] = Field(None, max_length=500)
+    notes: Optional[str] = Field(None, max_length=500)
 
 
 class StudentResponse(BaseModel):
@@ -28,6 +35,9 @@ class StudentResponse(BaseModel):
     birthdate: Optional[date] = None
     enroll_date: date
     group_id: Optional[UUID] = None
+    diet_notes: Optional[str] = None
+    medical_notes: Optional[str] = None
+    notes: Optional[str] = None
     created_utc: datetime
     updated_utc: datetime
     record_status: str

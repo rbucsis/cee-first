@@ -16,7 +16,7 @@ google_public_keys = {}
 
 if not firebase_admin._apps:
     print('Initializing Firebase')
-    cred = firebase_admin.credentials.Certificate(os.getenv('SERVICE_ACCOUNT_JSON_PATH'))
+    cred = firebase_admin.credentials.Certificate(os.getenv('USER_SERVICE_ACCOUNT_PATH'))
     firebase_admin.initialize_app(cred)
 
 SECRET = os.getenv('SECRET')

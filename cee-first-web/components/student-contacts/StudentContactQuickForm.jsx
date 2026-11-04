@@ -1,7 +1,7 @@
 import { apiFetch } from '@/lib/api';
 import Button from '@/components/ui/Button'
 
-export default function ContactStudentQuickForm({
+export default function StudentContactQuickForm({
     contact,
     saveCallback=null,
     cancelCallback=null

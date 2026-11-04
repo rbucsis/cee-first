@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { apiFetch } from '@/lib/api';
 import Button from '@/components/ui/Button'
+import StudentQuickForm from '@/components/students/StudentQuickForm';
 
 const CENTER_ID = process.env.NEXT_PUBLIC_DEV_CENTER_ID;
 
@@ -10,12 +11,7 @@ export default function StudentsPage() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // Form State
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [birthdate, setBirthdate] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
 
   const loadStudents = async () => {
     if (!CENTER_ID) {
@@ -40,27 +36,11 @@ export default function StudentsPage() {
     loadStudents();
   }, []);
 
-  const handleCreateStudent = async (e) => {
-    e.preventDefault();
-    try {
-      await apiFetch(`/api/v1/centers/${CENTER_ID}/students`, {
-        method: 'POST',
-        body: JSON.stringify({
-          first_name: firstName,
-          last_name: lastName || null,
-          birthdate: birthdate || null,
-        }),
-      });
-
-      setFirstName('');
-      setLastName('');
-      setBirthdate('');
-      setIsModalOpen(false);
-      loadStudents();
-    } catch (err) {
-      alert(`Error adding student: ${err.message}`);
-    }
-  };
+  const onSave = (student) => {
+    setModalOpen(false)
+    console.log(student)
+    window.location.pathname = "/students/"+student.id
+  }
 
   return (
     <div>
@@ -70,7 +50,7 @@ export default function StudentsPage() {
           <p className="text-sm text-muted">Manage enrolled children for your center</p>
         </div>
         <Button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => setModalOpen(true)}
         >
           + Add Student
         </Button>
@@ -120,57 +100,8 @@ export default function StudentsPage() {
       )}
 
       {/* Add Student Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
-            <h3 className="text-lg font-bold text-slate-900 mb-4">Add New Student</h3>
-            <form onSubmit={handleCreateStudent} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">First Name *</label>
-                <input
-                  type="text"
-                  required
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Last Name</label>
-                <input
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  className="w-full border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Birthdate</label>
-                <input
-                  type="date"
-                  value={birthdate}
-                  onChange={(e) => setBirthdate(e.target.value)}
-                  className="w-full border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-                />
-              </div>
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-slate-300 rounded-md text-sm text-slate-600 hover:bg-slate-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-md text-sm font-medium hover:bg-emerald-700"
-                >
-                  Save Student
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+      {modalOpen && (
+        <StudentQuickForm onCancel={() => setModalOpen(false)} onSave={(res) => onSave(res)}/>
       )}
     </div>
   );

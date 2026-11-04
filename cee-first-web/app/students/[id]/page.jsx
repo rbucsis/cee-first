@@ -39,7 +39,10 @@ export default function StudentDetailPage() {
             last_name: payload.last_name || null,
             birthday: payload.birthday || null,
             enroll_date: payload.enroll_date,
-            group_id: payload.group_id || null
+            group_id: payload.group_id || null,
+            diet_notes: payload.diet_notes || null,
+            medical_notes: payload.medical_notes || null,
+            notes: payload.notes || null
         };
         try {
             await apiFetch('/api/v1'+window.location.pathname, {
@@ -101,7 +104,7 @@ export default function StudentDetailPage() {
                         <input
                             name='last_name'
                             type="text"
-                            value={form?.last_name}
+                            value={form?.last_name || ""}
                             onChange={handleChange}
                             className="w-full border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
                         />
@@ -136,6 +139,36 @@ export default function StudentDetailPage() {
                             onChange={handleChange}
                             className="w-full border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
                         />
+                      </div>
+                      <div className='md:w-1/2 p-2'>
+                        <label className="block text-xs font-semibold text-muted mb-1">Diet Notes</label>
+                        <textarea
+                            name='diet_notes'
+                            value={form?.diet_notes || ""}
+                            onChange={handleChange}
+                            className="w-full border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                        />
+                        <p className='text-sm text-main'>{form?.diet_notes?.length || 0} / 500</p>
+                      </div>
+                      <div className='md:w-1/2 p-2'>
+                        <label className="block text-xs font-semibold text-muted mb-1">Medical Notes</label>
+                        <textarea
+                            name='medical_notes'
+                            value={form?.medical_notes || ""}
+                            onChange={handleChange}
+                            className="w-full border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                        />
+                        <p className='text-sm text-main'>{form?.medical_notes?.length || 0} / 500</p>
+                      </div>
+                      <div className='md:w-1/2 p-2'>
+                        <label className="block text-xs font-semibold text-muted mb-1">Notes</label>
+                        <textarea
+                            name='notes'
+                            value={form?.notes || ""}
+                            onChange={handleChange}
+                            className="w-full border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                        />
+                        <p className='text-sm text-main'>{form?.notes?.length || 0} / 500</p>
                       </div>
                       <div className='w-full p-2'>
                         <Button

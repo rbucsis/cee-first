@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { apiFetch } from '@/lib/api';
 import Button from '../ui/Button';
-import ContactStudentQuickForm from '../student-contacts/ContactStudentQuickForm';
+import StudentContactQuickForm from '../student-contacts/StudentContactQuickForm';
 
 export default function RelatedContacts({student}) {
     const [contacts, setContacts] = useState(null)
@@ -86,7 +86,7 @@ export default function RelatedContacts({student}) {
                 </div>
             )}
 
-            {modalOpen && <ContactStudentQuickForm contact={contact} saveCallback={() => saveCallback(false)} cancelCallback={() => setModalOpen(false)}/>}
+            {modalOpen && <StudentContactQuickForm contact={student} saveCallback={() => saveCallback(false)} cancelCallback={() => setModalOpen(false)}/>}
         </div>
     )
 }

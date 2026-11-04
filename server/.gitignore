@@ -3,3 +3,4 @@ __pycache__
 ./*/__pycache__
 .env
 core/user-manager.json
+core/storage-manager.json
