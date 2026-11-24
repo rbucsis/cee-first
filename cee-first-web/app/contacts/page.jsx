@@ -96,7 +96,7 @@ export default function ContactsPage() {
 
       {/* Add Student Modal */}
       {isModalOpen && (
-        <ContactQuickForm closeHandler={setIsModalOpen} />
+        <ContactQuickForm onSave={() => setIsModalOpen(false)} onCancel={() => setIsModalOpen(false)} />
       )}
     </div>
   );

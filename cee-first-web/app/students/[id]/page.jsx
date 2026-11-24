@@ -4,18 +4,28 @@ import { useState, useEffect } from 'react';
 import { apiFetch } from '@/lib/api';
 import Button from '@/components/ui/Button';
 import RelatedContacts from '@/components/students/RelatedContacts';
+import RelatedFiles from '@/components/files/RelatedFiles';
+import ConfirmationModal from '@/components/ui/ConfirmationModal';
+
+const CENTER_ID = process.env.NEXT_PUBLIC_DEV_CENTER_ID;
 
 export default function StudentDetailPage() {
     const [student, setStudent] = useState(null);
+    const [groups, setGroups] = useState([])
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [form, setForm] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
     
     const loadStudent = async () => {    
         try {
           setLoading(true);
           const data = await apiFetch('/api/v1'+window.location.pathname);
           setStudent(data);
+          if (data.group_id) {
+            const group_data = await apiFetch('/api/v1/groups/'+data.group_id);
+            setGroups([group_data])
+          }
           setForm(structuredClone(data))
           setError(null);
         } catch (err) {
@@ -24,25 +34,28 @@ export default function StudentDetailPage() {
           setLoading(false);
         }
       };
+
+      const loadGroups = async () => {
+        const data = await apiFetch('/api/v1/centers/'+CENTER_ID+'/groups')
+        setGroups(data || [])
+      }
     
       useEffect(() => {
         loadStudent();
+        loadGroups();
       }, []);
 
       const handleSave = async (e) => {
         e.preventDefault();
-        const formData = new FormData(e.currentTarget);
-        const payload = Object.fromEntries(formData.entries());
-        console.log(payload)
         const formattedPayload = {
-            first_name: payload.first_name,
-            last_name: payload.last_name || null,
-            birthday: payload.birthday || null,
-            enroll_date: payload.enroll_date,
-            group_id: payload.group_id || null,
-            diet_notes: payload.diet_notes || null,
-            medical_notes: payload.medical_notes || null,
-            notes: payload.notes || null
+            first_name: form.first_name,
+            last_name: form.last_name || null,
+            birthday: form.birthday || null,
+            enroll_date: form.enroll_date,
+            group_id: form.group_id || null,
+            diet_notes: form.diet_notes || null,
+            medical_notes: form.medical_notes || null,
+            notes: form.notes || null
         };
         try {
             await apiFetch('/api/v1'+window.location.pathname, {
@@ -58,8 +71,20 @@ export default function StudentDetailPage() {
       const handleChange =(e) => {
         const {name, value} = e.target
         const update = {}
-        update[name] = value
+        update[name] = (value === "- None -" ? null : value)
         setForm(oldForm => ({...oldForm, ...update}))
+      }
+
+      const handleDelete = async () => {
+        try {
+          setShowDeleteModal(false)
+          await apiFetch('/api/v1'+window.location.pathname, {
+              method: 'DELETE'
+          });
+          window.location.pathname = "/students"
+        } catch (e) {
+          window.alert("Failed to delete student: "+e.message)
+        }
       }
 
       const isNotChanged = () => {
@@ -83,7 +108,7 @@ export default function StudentDetailPage() {
           )}
     
           {loading ? (
-            <div className="text-center py-12 text-main">Loading contact...</div>
+            <div className="text-center py-12 text-main">Loading student...</div>
           ) : (
               <div>
                   <h2 className="text-2xl font-bold tracking-tight text-main">{student?.first_name} {student?.last_name}</h2>
@@ -132,13 +157,17 @@ export default function StudentDetailPage() {
                       </div>
                       <div className='md:w-1/2 p-2'>
                         <label className="block text-xs font-semibold text-muted mb-1">Group</label>
-                        <input
+                        <select
                             name='group_id'
-                            type="text"
                             value={form?.group_id || ""}
                             onChange={handleChange}
                             className="w-full border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-                        />
+                        >
+                          <option>- None -</option>
+                          {groups.map((g) => (
+                            <option key={g.id} value={g.id}>{g.name}</option>
+                          ))}
+                        </select>
                       </div>
                       <div className='md:w-1/2 p-2'>
                         <label className="block text-xs font-semibold text-muted mb-1">Diet Notes</label>
@@ -174,8 +203,17 @@ export default function StudentDetailPage() {
                         <Button
                             type="submit"
                             disabled={isNotChanged()}
+                            className='m-2'
                         >
                             Save Student
+                        </Button>
+                        <Button
+                            type="button"
+                            variant='danger'
+                            onClick={() => setShowDeleteModal(true)}
+                            className='m-2'
+                        >
+                            Delete Student
                         </Button>
                       </div>
                   </form>
@@ -184,9 +222,13 @@ export default function StudentDetailPage() {
                       <div className='md:w-1/2 p-2'>
                         <RelatedContacts student={student} />
                       </div>
+                      <div className='md:w-1/2 p-2'>
+                        <RelatedFiles ref_table='students' ref_id={student?.id} />
+                      </div>
                   </div>
               </div>
           )}
+          {showDeleteModal && <ConfirmationModal title="Delete Student" message={"Do you really want to delete "+student.first_name+"?"} onCancel={() => setShowDeleteModal(false)} onConfirm={handleDelete}/>}
         </div>
       )
 }

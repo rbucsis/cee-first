@@ -1,11 +1,12 @@
 from typing import List, Annotated
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, Form, File
+from fastapi.responses import PlainTextResponse
 from psycopg import AsyncConnection
 from core.auth import get_current_user
 from core.database import get_db_connection
 from schemas.files import FileResponse, FileRename
-from core.storage import write_file
+from core.storage import write_file, read_file, delete_file_from_storage
 
 router = APIRouter(prefix="/api/v1", tags=["Files"])
 
@@ -61,8 +62,8 @@ async def create_file(
                 center_id,
                 ref_table,
                 ref_id,
-                file_name,
-                file_type,
+                file.filename,
+                file.content_type,
                 user_id_str,
                 user_id_str,
             ),
@@ -77,19 +78,29 @@ async def create_file(
 )
 async def list_files(
     center_id: UUID,
+    ref_table: str = None,
+    ref_id: str = None,
     current_user: dict = Depends(get_current_user),
     db: AsyncConnection = Depends(get_db_connection),
 ):
     """Lists all active files for a given center."""
     async with db.cursor() as cur:
-        await cur.execute(
-            """
+        query = """
             SELECT id, center_id, ref_table, ref_id, file_name, file_type, created_utc, updated_utc, record_status
             FROM cee_dev.files
             WHERE center_id = %s AND record_status = 'Active'
-            ORDER BY file_name ASC;
-            """,
-            (center_id,),
+        """
+        vals = [center_id,]
+        if ref_table:
+            query += " AND ref_table = %s"
+            vals.append(ref_table)
+        if ref_id:
+            query += " AND ref_id = %s"
+            vals.append(ref_id)
+        query += " ORDER BY file_name ASC;"
+        await cur.execute(
+            query,
+            vals,
         )
         files = await cur.fetchall()
 
@@ -120,6 +131,49 @@ async def get_file(
         )
 
     return file
+
+@router.get("/files/{file_id}/download", response_class=PlainTextResponse)
+async def get_file(
+    file_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncConnection = Depends(get_db_connection),
+):
+    """Fetches a specific file by ID."""
+    async with db.cursor() as cur:
+        await cur.execute(
+            """
+            SELECT id, center_id, ref_table, ref_id, file_name, file_type, created_utc, updated_utc, record_status
+            FROM cee_dev.files
+            WHERE id = %s AND record_status = 'Active';
+            """,
+            (file_id,),
+        )
+        file = await cur.fetchone()
+
+        if not file:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="File not found"
+            )
+
+        await cur.execute("""
+            SELECT * FROM cee_dev.centers WHERE id = %s AND record_status = 'Active';
+        """, (file.get('center_id'),))
+
+        center = (await cur.fetchone())
+
+        if not center:
+            raise HTTPException(status_code=404, detail="Center not found")
+
+    path = f"{center.get('org_id')}/{center.get('id')}/"
+    ref_table = file.get('ref_table')
+    ref_id = file.get('ref_id')
+    if ref_table:
+        path += f'{ref_table}/'
+    if ref_id:
+        path += f'{ref_id}/'
+    path += file.get('file_name')
+    url = await read_file(path)
+    return url
 
 
 @router.put("/files/{file_id}", response_model=FileResponse)
@@ -171,19 +225,53 @@ async def delete_file(
     current_user: dict = Depends(get_current_user),
     db: AsyncConnection = Depends(get_db_connection),
 ):
-    """Soft deletes a file."""
-    user_id_str = str(current_user["id"])
-
+    """Deletes a file."""
     async with db.cursor() as cur:
         await cur.execute(
             """
-            UPDATE cee_dev.files
-            SET record_status = 'Deleted', updated_by = %s
+            SELECT id, center_id, ref_table, ref_id, file_name, file_type, created_utc, updated_utc, record_status
+            FROM cee_dev.files
             WHERE id = %s AND record_status = 'Active';
             """,
-            (user_id_str, file_id),
+            (file_id,),
         )
+        file = await cur.fetchone()
+
+        if not file:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="File not found"
+            )
+
+        await cur.execute("""
+            SELECT * FROM cee_dev.centers WHERE id = %s AND record_status = 'Active';
+        """, (file.get('center_id'),))
+
+        center = (await cur.fetchone())
+
+        if not center:
+            raise HTTPException(status_code=404, detail="Center not found")
+
+        path = f"{center.get('org_id')}/{center.get('id')}/"
+        ref_table = file.get('ref_table')
+        ref_id = file.get('ref_id')
+        if ref_table:
+            path += f'{ref_table}/'
+        if ref_id:
+            path += f'{ref_id}/'
+        path += file.get('file_name')
+
+        await delete_file_from_storage(path)
+
+        await cur.execute(
+            """
+            DELETE FROM cee_dev.files
+            WHERE id = %s;
+            """,
+            (file_id,),
+        )
+
         if cur.rowcount == 0:
+            print("File not found or already deleted.")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="File not found or already deleted.",

@@ -86,7 +86,7 @@ export default function RelatedContacts({student}) {
                 </div>
             )}
 
-            {modalOpen && <StudentContactQuickForm contact={student} saveCallback={() => saveCallback(false)} cancelCallback={() => setModalOpen(false)}/>}
+            {modalOpen && <StudentContactQuickForm student={student} saveCallback={() => saveCallback(false)} cancelCallback={() => setModalOpen(false)}/>}
         </div>
     )
 }

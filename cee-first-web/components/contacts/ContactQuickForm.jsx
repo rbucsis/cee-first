@@ -4,7 +4,8 @@ import Button from '@/components/ui/Button'
 const CENTER_ID = process.env.NEXT_PUBLIC_DEV_CENTER_ID;
 
 export default function ContactQuickForm({
-    closeHandler = null
+    onSave = null,
+    onCancel = null
 }) {
     
     const handleCreateContact = async (e) => {
@@ -18,12 +19,14 @@ export default function ContactQuickForm({
             phone: payload.phone || null,
         };
         try {
-            await apiFetch(`/api/v1/centers/${CENTER_ID}/contacts`, {
+            let contact = await apiFetch(`/api/v1/centers/${CENTER_ID}/contacts`, {
                 method: 'POST',
                 body: JSON.stringify(formattedPayload),
             });
 
-            closeHandler(false);
+            if (onSave) {
+                onSave(contact)
+            }
         } catch (err) {
             alert(`Error adding Contact: ${err.message}`);
         }
@@ -69,7 +72,7 @@ export default function ContactQuickForm({
                 <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
                 <button
                     type="button"
-                    onClick={() => closeHandler(false)}
+                    onClick={() => onCancel ? onCancel() : null}
                     className="px-4 py-2 border border-slate-300 rounded-md text-sm text-slate-600 hover:bg-slate-50"
                 >
                     Cancel

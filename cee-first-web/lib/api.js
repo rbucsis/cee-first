@@ -4,10 +4,13 @@ export async function apiFetch(endpoint, options = {}) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('dev_token') : null;
 
   const headers = {
-    'Content-Type': 'application/json',
     ...options.headers,
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
+
+  if (!(options.body instanceof FormData) && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
@@ -21,8 +24,9 @@ export async function apiFetch(endpoint, options = {}) {
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
+    console.log(response)
     const message = data.detail || `Request failed with status ${response.status}`;
-    throw new Error(message);
+    throw new Error((typeof message !== 'string' ? JSON.stringify(message) : message));
   }
 
   return data;
