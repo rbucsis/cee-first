@@ -15,11 +15,11 @@ export function ThemeProvider({ children }) {
       document.documentElement.setAttribute('data-theme', savedTheme);
     } else {
       // Auto-detect season based on month
-      const month = new Date().getMonth(); // 0-11
+      const month = new Date().getMonth();
       let defaultSeason = 'spring-light';
       if (month >= 5 && month <= 7) defaultSeason = 'summer-light';
       else if (month >= 8 && month <= 10) defaultSeason = 'fall-light';
-      else if (month === 11 || month <= 1) defaultSeason = 'winter-light';
+      else if (month >= 11 || month <= 1) defaultSeason = 'winter-light';
 
       setTheme(defaultSeason);
       document.documentElement.setAttribute('data-theme', defaultSeason);
