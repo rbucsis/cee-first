@@ -4,7 +4,9 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 bg-nav text-white px-6 py-4 flex items-center justify-between">
       <div className="flex items-center gap-8">
-        <h1 className="text-xl font-bold text-emerald-400">CEE-First</h1>
+        <Link href="/">
+          <h1 className="text-xl font-bold text-emerald-400">CEE-First</h1>
+        </Link>
         <div className="flex gap-4 text-sm font-medium text-nav-text">
           <Link href="/students" className="hover:text-white transition-colors">
             Students
