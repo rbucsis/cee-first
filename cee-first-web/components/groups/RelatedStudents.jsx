@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { apiFetch } from '@/lib/api';
-import Button from '../ui/Button';
 
 const CENTER_ID = process.env.NEXT_PUBLIC_DEV_CENTER_ID;
 
@@ -10,7 +9,6 @@ export default function RelatedStudents({group_id}) {
     const [students, setStudents] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
-    const [modalOpen, setModalOpen] = useState(false)
 
     const loadStudents = async () => {
         try {
@@ -28,11 +26,6 @@ export default function RelatedStudents({group_id}) {
     useEffect(() => {
         loadStudents();
     }, []);
-
-    const saveCallback = () => {
-        loadStudents();
-        setModalOpen(false);
-    }
 
     return (
         <div>
@@ -67,11 +60,10 @@ export default function RelatedStudents({group_id}) {
                             </tbody>
                         </table>
                     </div>
-                    <Button size='sm' onClick={() => setModalOpen(true)}>+ Add Student</Button>
                 </div> 
             ) : (
                 <div className='flex justify-center stretch border border-primary rounded m-6 px-12 py-8'>
-                    <Button onClick={() => setModalOpen(true)}>+ Add First Student</Button>
+                    Set Student groups to see them here!
                 </div>
             )}
         </div>

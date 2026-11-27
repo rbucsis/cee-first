@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { apiFetch } from '@/lib/api';
 import Button from '@/components/ui/Button'
+import GroupQuickForm from '@/components/groups/GroupQuickForm';
 
 const CENTER_ID = process.env.NEXT_PUBLIC_DEV_CENTER_ID;
 
@@ -81,6 +82,7 @@ export default function GroupsPage() {
           </table>
         </div>
       )}
+    {modalOpen && <GroupQuickForm onCancel={() => setModalOpen(false)} onSave={(g) => window.location.pathname = "/groups/"+g.id}/>}
     </div>
   );
 }

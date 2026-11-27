@@ -161,7 +161,7 @@ export default function StudentDetailPage() {
                             onChange={handleChange}
                             className="w-full border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
                         >
-                          <option>- None -</option>
+                          <option value=""></option>
                           {groups.map((g) => (
                             <option key={g.id} value={g.id}>{g.name}</option>
                           ))}

@@ -33,7 +33,7 @@ async def create_group(
                 created_by, 
                 updated_by
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s)
             RETURNING id, center_id, name, created_utc, updated_utc, record_status;
             """,
             (
@@ -148,14 +148,13 @@ async def delete_group(
     current_user: dict = Depends(get_current_user),
     db: AsyncConnection = Depends(get_db_connection),
 ):
-    """Deletes a Student."""
+    """Deletes a Group."""
     user_id_str = str(current_user["id"])
 
     async with db.cursor() as cur:
         await cur.execute(
             """
-            UPDATE cee_dev.groups
-            SET record_status = 'Deleted', updated_by = %s
+            DELETE FROM cee_dev.groups
             WHERE id = %s AND record_status = 'Active';
             """,
             (user_id_str, group_id),

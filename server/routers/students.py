@@ -80,7 +80,6 @@ async def list_students(
     """
 
     params = [ center_id, ]
-
     if group_id:
         query += """
             AND group_id = %s
@@ -92,13 +91,8 @@ async def list_students(
     """
     async with db.cursor() as cur:
         await cur.execute(
-            """
-            SELECT id, center_id, first_name, last_name, birthdate, enroll_date, group_id, diet_notes, medical_notes, notes, created_utc, updated_utc, record_status
-            FROM cee_dev.students
-            WHERE center_id = %s AND record_status = 'Active'
-            ORDER BY first_name ASC, last_name ASC;
-            """,
-            (center_id,),
+            query,
+            params,
         )
         students = await cur.fetchall()
 
