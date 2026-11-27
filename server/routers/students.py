@@ -181,10 +181,15 @@ async def delete_student(
     current_user: dict = Depends(get_current_user),
     db: AsyncConnection = Depends(get_db_connection),
 ):
-    """Deletes a Student."""
+    """Deletes a Student. Fully deletes related Student-Contact links."""
     user_id_str = str(current_user["id"])
 
     async with db.cursor() as cur:
+        await cur.execute(
+            """
+                DELETE FROM cee_dev.student_contacts WHERE student_id = %s
+            """, (student_id,)
+        )
         await cur.execute(
             """
             UPDATE cee_dev.students

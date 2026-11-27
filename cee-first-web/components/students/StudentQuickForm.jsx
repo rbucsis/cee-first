@@ -25,9 +25,9 @@ export default function StudentQuickForm({
                 body: JSON.stringify(formattedPayload),
             });
 
-            console.log("QuickForm Response:")
-            console.log(res)
-            onSave(res);
+            if (onSave) {
+                onSave(res);
+            }
         } catch (err) {
             alert(`Error creating student: ${err.message}`);
         }
@@ -83,7 +83,7 @@ export default function StudentQuickForm({
                 <Button
                     type="submit"
                 >
-                    Save Contact
+                    Save Student
                 </Button>
                 </div>
             </form>

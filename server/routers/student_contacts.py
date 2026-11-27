@@ -203,17 +203,16 @@ async def delete_student_contact_link(
     current_user: dict = Depends(get_current_user),
     db: AsyncConnection = Depends(get_db_connection),
 ):
-    """Soft deletes a student-contact relationship link."""
+    """Deletes a student-contact relationship link."""
     user_id_str = str(current_user["id"])
 
     async with db.cursor() as cur:
         await cur.execute(
             """
-            UPDATE cee_dev.student_contacts
-            SET record_status = 'Deleted', updated_by = %s
+            DELETE FROM cee_dev.student_contacts
             WHERE id = %s AND record_status = 'Active';
             """,
-            (user_id_str, link_id),
+            (link_id,),
         )
         if cur.rowcount == 0:
             raise HTTPException(

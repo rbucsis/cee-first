@@ -47,7 +47,7 @@ export default function StudentDetailPage() {
 
       const handleSave = async (e) => {
         e.preventDefault();
-        const formattedPayload = {
+        const payload = {
             first_name: form.first_name,
             last_name: form.last_name || null,
             birthday: form.birthday || null,
@@ -60,19 +60,17 @@ export default function StudentDetailPage() {
         try {
             await apiFetch('/api/v1'+window.location.pathname, {
                 method: 'PUT',
-                body: JSON.stringify(formattedPayload),
+                body: JSON.stringify(payload),
             });
             loadStudent()
         } catch (err) {
-            alert(`Error updating Contact: ${err.message}`);
+            alert(`Error updating Student: ${err.message}`);
         }
       }
 
       const handleChange =(e) => {
         const {name, value} = e.target
-        const update = {}
-        update[name] = (value === "- None -" ? null : value)
-        setForm(oldForm => ({...oldForm, ...update}))
+        setForm(oldForm => ({...oldForm, [name]: (value || null)}))
       }
 
       const handleDelete = async () => {

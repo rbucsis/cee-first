@@ -4,12 +4,15 @@ import { useState, useEffect } from 'react';
 import { apiFetch } from '@/lib/api';
 import Button from '../ui/Button';
 import ContactStudentQuickForm from '../student-contacts/ContactStudentQuickForm';
+import { FaRegTrashAlt } from "react-icons/fa";
+import ConfirmationModal from '../ui/ConfirmationModal';
 
 export default function RelatedStudents({contact}) {
     const [students, setStudents] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [modalOpen, setModalOpen] = useState(false)
+    const [showConfirmation, setShowConfirmation] = useState(null)
 
     const loadStudents = async () => {
         try {
@@ -33,6 +36,14 @@ export default function RelatedStudents({contact}) {
         setModalOpen(false);
     }
 
+    const handleDelete = async (link) => {
+        setShowConfirmation(null)
+        await apiFetch("/api/v1/student-contacts/"+link.id, {
+            "method": "DELETE"
+        })
+        loadStudents()
+    }
+
     return (
         <div>
             <h3 className="text-xl font-bold tracking-tight text-main">Related Students</h3>
@@ -52,13 +63,17 @@ export default function RelatedStudents({contact}) {
                         <table className="w-full text-left text-sm">
                             <thead className="bg-slate-50 text-slate-600 border-b border-slate-200 font-semibold">
                             <tr>
+                                <th></th>
                                 <th className="px-6 py-3">Name</th>
                             </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
                             {students.map((s) => (
-                                <tr key={s.id} className="hover:bg-slate-50 hover:cursor-pointer" onClick={() => window.location.pathname = "/students/"+s.student_id}>
-                                    <td className="px-6 py-4 font-medium text-slate-900">
+                                <tr key={s.id} className="hover:bg-slate-50">
+                                    <td className='w-1 px-5 py-4 font-medium text-slate-900'>
+                                        <FaRegTrashAlt className='mx-auto hover:cursor-pointer' onClick={() => setShowConfirmation(s)}/>
+                                    </td>
+                                    <td className="px-6 py-4 font-medium text-slate-900 hover:cursor-pointer" onClick={() => window.location.pathname = "/students/"+s.student_id}>
                                         {s.student_first_name} {s.student_last_name || ''}
                                     </td>
                                 </tr>
@@ -75,6 +90,7 @@ export default function RelatedStudents({contact}) {
             )}
 
             {modalOpen && <ContactStudentQuickForm contact={contact} saveCallback={() => saveCallback(false)} cancelCallback={() => setModalOpen(false)}/>}
+            {showConfirmation && <ConfirmationModal title="Delete Relationship" message={"Delete relationship with "+showConfirmation.student_first_name+"?"} onCancel={() => setShowConfirmation(null)} onConfirm={() => handleDelete(showConfirmation)}/>}
         </div>
     )
 }

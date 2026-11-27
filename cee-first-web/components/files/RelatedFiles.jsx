@@ -8,6 +8,7 @@ import { FaRegFileLines } from "react-icons/fa6";
 import { FaRegFilePdf } from "react-icons/fa6";
 import { FaRegFileWord } from "react-icons/fa6";
 import { FaRegTrashAlt } from "react-icons/fa";
+import ConfirmationModal from '../ui/ConfirmationModal';
 
 const CENTER_ID = process.env.NEXT_PUBLIC_DEV_CENTER_ID;
 
@@ -16,6 +17,7 @@ export default function RelatedFiles({ref_table, ref_id}) {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [modalOpen, setModalOpen] = useState(false)
+    const [showConfirmation, setShowConfirmation] = useState(null)
 
     const loadFiles = async () => {
         try {
@@ -55,9 +57,10 @@ export default function RelatedFiles({ref_table, ref_id}) {
     const openFile = async (file) => {
         try {
             const url = "/api/v1/files/"+file.id+"/download"
-            const singed_url = await apiFetch(url)
+            const signed_url = await apiFetch(url)
+            console.log("signed_url: "+JSON.stringify(signed_url))
             const link = document.createElement('a');
-            link.href = singed_url;
+            link.href = signed_url;
             link.download = file.file_name || '';
             document.body.appendChild(link);
             link.click();
@@ -68,6 +71,7 @@ export default function RelatedFiles({ref_table, ref_id}) {
     }
 
     const handleDelete = async (file) => {
+        setShowConfirmation(null)
         await apiFetch("/api/v1/files/"+file.id, {
             "method": "DELETE"
         })
@@ -101,7 +105,9 @@ export default function RelatedFiles({ref_table, ref_id}) {
                             <tbody className="divide-y divide-slate-100">
                             {files.map((f) => (
                                 <tr key={f.id} className="hover:bg-slate-50">
-                                    <td className="w-1 px-1 py-4 font-medium text-slate-900"><FaRegTrashAlt className="mx-auto hover:cursor-pointer" onClick={() => handleDelete(f)}/></td>
+                                    <td className="w-1 px-1 py-4 font-medium text-slate-900">
+                                        <FaRegTrashAlt className="mx-auto hover:cursor-pointer" onClick={() => setShowConfirmation(f)}/>
+                                    </td>
                                     <td className="w-1 px-1 py-4 font-medium text-slate-900">
                                         {f.file_type == 'text/plain' && (<FaRegFileLines className="mx-auto hover:cursor-pointer" color="#222" onClick={() => openFile(f)} />)}
                                         {f.file_type == 'application/pdf' && (<FaRegFilePdf className="mx-auto hover:cursor-pointer" color="#d00" onClick={() => openFile(f)} />)}
@@ -125,6 +131,7 @@ export default function RelatedFiles({ref_table, ref_id}) {
             )}
 
             {modalOpen && <FileQuickForm onCancel={() => setModalOpen(false)} onSave={(res) => saveCallback(res)} ref_table={ref_table} ref_id={ref_id} />}
+            {showConfirmation && <ConfirmationModal title="Delete File" message={"Are you sure you want to delete "+showConfirmation.file_name+"?"} onCancel={() => setShowConfirmation(null)} onConfirm={() => handleDelete(showConfirmation)}/>}
         </div>
     )
 }

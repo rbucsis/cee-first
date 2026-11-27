@@ -4,12 +4,16 @@ import { useState, useEffect } from 'react';
 import { apiFetch } from '@/lib/api';
 import Button from '@/components/ui/Button';
 import RelatedStudents from '@/components/contacts/RelatedStudents';
+import RelatedFiles from '@/components/files/RelatedFiles';
+import ConfirmationModal from '@/components/ui/ConfirmationModal';
+import RelatedContacts from '@/components/contacts/RelatedContacts';
 
 export default function ContactDetailPage() {
     const [contact, setContact] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [form, setForm] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
     
     const loadContact = async () => {    
         try {
@@ -31,19 +35,16 @@ export default function ContactDetailPage() {
 
       const handleSave = async (e) => {
         e.preventDefault();
-        const formData = new FormData(e.currentTarget);
-        const payload = Object.fromEntries(formData.entries());
-        console.log(payload)
-        const formattedPayload = {
-            first_name: payload.first_name,
-            last_name: payload.last_name || null,
-            email: payload.email || null,
-            phone: payload.phone || null,
+        const payload = {
+            first_name: form.first_name,
+            last_name: form.last_name || null,
+            email: form.email || null,
+            phone: form.phone || null,
         };
         try {
             await apiFetch('/api/v1'+window.location.pathname, {
                 method: 'PUT',
-                body: JSON.stringify(formattedPayload),
+                body: JSON.stringify(payload),
             });
             loadContact()
         } catch (err) {
@@ -53,9 +54,19 @@ export default function ContactDetailPage() {
 
       const handleChange =(e) => {
         const {name, value} = e.target
-        const update = {}
-        update[name] = value
-        setForm(oldForm => ({...oldForm, ...update}))
+        setForm(oldForm => ({...oldForm, [name]: (value || null)}))
+      }
+
+      const handleDelete = async () => {
+        try {
+          setShowDeleteModal(false)
+          await apiFetch('/api/v1'+window.location.pathname, {
+              method: 'DELETE'
+          });
+          window.location.pathname = "/contacts"
+        } catch (e) {
+          window.alert("Failed to delete contact: "+e.message)
+        }
       }
 
       const isNotChanged = () => {
@@ -130,8 +141,17 @@ export default function ContactDetailPage() {
                         <Button
                             type="submit"
                             disabled={isNotChanged()}
+                            className='m-2'
                         >
                             Save Contact
+                        </Button>
+                        <Button
+                            type="button"
+                            variant='danger'
+                            onClick={() => setShowDeleteModal(true)}
+                            className='m-2'
+                        >
+                            Delete Contact
                         </Button>
                       </div>
                   </form>
@@ -141,11 +161,15 @@ export default function ContactDetailPage() {
                         <RelatedStudents contact={contact} />
                       </div>
                       <div className='md:w-1/2 p-2'>
-                        <h3 className="text-xl font-bold tracking-tight text-main">Related Contacts</h3>
+                        <RelatedContacts contact={contact} />
+                      </div>
+                      <div className='md:w-1/2 p-2'>
+                        <RelatedFiles ref_table='contacts' ref_id={contact?.id} />
                       </div>
                   </div>
               </div>
           )}
+          {showDeleteModal && <ConfirmationModal title="Delete Contact" message={"Do you really want to delete "+contact.first_name+"?"} onCancel={() => setShowDeleteModal(false)} onConfirm={handleDelete}/>}
         </div>
       )
 }

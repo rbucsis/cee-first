@@ -21,7 +21,13 @@ export async function apiFetch(endpoint, options = {}) {
     return null;
   }
 
-  const data = await response.json().catch(() => ({}));
+  const contentType = response.headers.get("content-type")
+  let data
+  if (contentType.includes('text/plain')) {
+    data = await response.text().catch(() => ({}));
+  } else {
+    data = await response.json().catch(() => ({}));
+  }
 
   if (!response.ok) {
     console.log(response)

@@ -11,9 +11,16 @@ from routers import auth, students, contacts, student_contacts, health, groups, 
 async def lifespan(app: FastAPI):
     print("Container booting: Opening PostgreSQL connection pool...")
     await db.init_db()
-    yield
-    print("SIGTERM received: Closing PostgreSQL connection pool...")
-    await db.close_db()
+    gcs_client, gcs_bucket = store.init_storage()
+    app.state.gcs_client = gcs_client
+    app.state.gcs_bucket = gcs_bucket
+    try:
+        yield
+    finally:
+        print("Shutting down: Closing PostgreSQL connection pool...")
+        await db.close_db()
+        if app.state.gcs_client:
+            app.state.gcs_client.close()
 
 app = FastAPI(
     title=config.title,

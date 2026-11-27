@@ -108,6 +108,40 @@ async def get_contact(
 
     return contact
 
+@router.get("/contacts/{contact_id}/related", response_model=List[ContactResponse])
+async def get_related_contacts(
+    contact_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncConnection = Depends(get_db_connection),
+):
+    """Fetches Contacts related to a given contact by common student-contact links."""
+    async with db.cursor() as cur:
+
+        try:
+            contact_id = UUID(contact_id)
+        except:
+            raise HTTPException(422, "Contact not found.")
+        
+        await cur.execute(
+            """
+            WITH related_students as (
+                SELECT
+                    student_id
+                FROM cee_dev.student_contacts
+                where contact_id = %s
+            )
+            SELECT DISTINCT
+                c.*
+            FROM cee_dev.contacts c
+            JOIN cee_dev.student_contacts sc ON sc.contact_id = c.id
+            JOIN related_students rs ON rs.student_id = sc.student_id
+            WHERE c.id <> %s AND c.record_status = 'Active'
+            """,
+            (contact_id, contact_id,),
+        )
+        contacts = await cur.fetchall()
+
+    return contacts
 
 @router.put("/contacts/{contact_id}", response_model=ContactResponse)
 async def update_contact(
@@ -158,10 +192,15 @@ async def delete_contact(
     current_user: dict = Depends(get_current_user),
     db: AsyncConnection = Depends(get_db_connection),
 ):
-    """Soft deletes a contact."""
+    """Soft deletes a contact. Fully deletes related Student-Contact links."""
     user_id_str = str(current_user["id"])
 
     async with db.cursor() as cur:
+        await cur.execute(
+            """
+                DELETE FROM cee_dev.student_contacts WHERE contact_id = %s
+            """, (contact_id,)
+        )
         await cur.execute(
             """
             UPDATE cee_dev.contacts

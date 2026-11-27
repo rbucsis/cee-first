@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status, UploadFile, File
+from fastapi import Depends, HTTPException, UploadFile, File, Request
 from psycopg import AsyncConnection
 from .database import get_db_connection
 import os
@@ -8,14 +8,26 @@ from datetime import timedelta
 
 load_dotenv()
 
-print("Initializing Storage Client")
-bucket = None
-try:
-    storage_client = storage.Client.from_service_account_json(os.getenv("FILE_SERVICE_ACCOUNT_PATH"))
-    bucket = storage_client.bucket(os.getenv("GCP_BUCKET_NAME"))
-except Exception as e:
-    print("An error occurred while initializing GCP storage client")
-    print(e)
+def init_storage() -> tuple[storage.Client | None, storage.Bucket | None]:
+    print("Initializing Storage Client...")
+    try:
+        client = storage.Client.from_service_account_json(
+            os.getenv("FILE_SERVICE_ACCOUNT_PATH")
+        )
+        bucket = client.bucket(os.getenv("GCP_BUCKET_NAME"))
+        return client, bucket
+    except Exception as e:
+        print(f"An error occurred while initializing GCP storage client: {e}")
+        return None, None
+
+def get_bucket(request: Request) -> storage.Bucket:
+    bucket = getattr(request.app.state, "gcs_bucket", None)
+    if bucket is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Cloud Storage is temporarily unavailable."
+        )
+    return bucket
 
 SECRET = os.getenv('SECRET')
 
@@ -29,24 +41,21 @@ FILE_TYPE = {
 async def write_file(
     file: UploadFile,
     path: str,
-    db: AsyncConnection = Depends(get_db_connection)
-) -> dict:
-    if not file.content_type in FILE_TYPE:
-        raise HTTPException(status_code=400, detail="File type should be one of ['txt', 'pdf', 'doc', 'docx']")
+    bucket: storage.Bucket,
+) -> None:
+    if file.content_type not in FILE_TYPE:
+        raise HTTPException(
+            status_code=400,
+            detail="File type should be one of ['txt', 'pdf', 'doc', 'docx']",
+        )
 
-    if not storage_client:
-        raise HTTPException(status_code=503, detail="Cloud Storage is temporarily unavailable.")
+    # No `if not storage_client:` needed anymore — get_bucket() already checked it!
+    bucket.blob(path + file.filename).upload_from_file(
+        file.file, content_type=file.content_type
+    )
 
-    bucket.blob(path+file.filename).upload_from_file(file.file, content_type=file.content_type)
-
-async def read_file(
-    file: str
-) -> File:
-    if not storage_client:
-        raise HTTPException(status_code=503, detail="Cloud Storage is temporarily unavailable.")
-
+async def read_file(file: str, bucket: storage.Bucket) -> str:
     blob = bucket.blob(file)
-
     if not blob.exists():
         raise HTTPException(status_code=404, detail="File not found")
 
@@ -56,17 +65,7 @@ async def read_file(
         method="GET",
     )
 
-async def delete_file_from_storage(
-    file: str
-) -> None:
-
-    if not storage_client:
-        raise HTTPException(status_code=503, detail="Cloud Storage is temporarily unavailable.")
-
-    print("STORAGE: Fetching Blob...")
+async def delete_file_from_storage(file: str, bucket: storage.Bucket) -> None:
     blob = bucket.blob(file)
-
     if blob.exists():
         blob.delete()
-
-    return

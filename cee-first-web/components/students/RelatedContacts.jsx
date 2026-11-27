@@ -4,12 +4,15 @@ import { useState, useEffect } from 'react';
 import { apiFetch } from '@/lib/api';
 import Button from '../ui/Button';
 import StudentContactQuickForm from '../student-contacts/StudentContactQuickForm';
+import { FaRegTrashAlt } from "react-icons/fa";
+import ConfirmationModal from '../ui/ConfirmationModal';
 
 export default function RelatedContacts({student}) {
     const [contacts, setContacts] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [modalOpen, setModalOpen] = useState(false)
+    const [showConfirmation, setShowConfirmation] = useState(null)
 
     const loadContacts = async () => {
         try {
@@ -33,6 +36,14 @@ export default function RelatedContacts({student}) {
         setModalOpen(false);
     }
 
+    const handleDelete = async (link) => {
+        setShowConfirmation(null)
+        await apiFetch("/api/v1/student-contacts/"+link.id, {
+            "method": "DELETE"
+        })
+        loadContacts()
+    }
+
     return (
         <div>
             <h3 className="text-xl font-bold tracking-tight text-main">Related Contacts</h3>
@@ -52,6 +63,7 @@ export default function RelatedContacts({student}) {
                         <table className="w-full text-left text-sm">
                             <thead className="bg-slate-50 text-slate-600 border-b border-slate-200 font-semibold">
                             <tr>
+                                <th></th>
                                 <th className="px-6 py-3">Name</th>
                                 <th className="px-6 py-3">Relation</th>
                                 <th className="px-6 py-3">Primary Contact</th>
@@ -60,17 +72,20 @@ export default function RelatedContacts({student}) {
                             </thead>
                             <tbody className="divide-y divide-slate-100">
                             {contacts.map((c) => (
-                                <tr key={c.id} className="hover:bg-slate-50 hover:cursor-pointer" onClick={() => window.location.pathname = "/contacts/"+c.contact_id}>
-                                    <td className="px-6 py-4 font-medium text-slate-900">
+                                <tr key={c.id} className="hover:bg-slate-50">
+                                    <td className='w-1 px-5 py-4 font-medium text-slate-900'>
+                                        <FaRegTrashAlt className='mx-auto hover:cursor-pointer' onClick={() => setShowConfirmation(c)}/>
+                                    </td>
+                                    <td className="px-6 py-4 font-medium text-slate-900 hover:cursor-pointer" onClick={() => window.location.pathname = "/contacts/"+c.contact_id}>
                                         {c.contact_first_name} {c.contact_last_name || ''}
                                     </td>
-                                    <td className="px-6 py-4 font-medium text-slate-900">
+                                    <td className="px-6 py-4 font-medium text-slate-900 hover:cursor-pointer" onClick={() => window.location.pathname = "/contacts/"+c.contact_id}>
                                         {c.relation}
                                     </td>
-                                    <td className="px-6 py-4 font-medium text-slate-900">
+                                    <td className="px-6 py-4 font-medium text-slate-900 hover:cursor-pointer" onClick={() => window.location.pathname = "/contacts/"+c.contact_id}>
                                         {c.primary_contact ? "Yes" : ""}
                                     </td>
-                                    <td className="px-6 py-4 font-medium text-slate-900">
+                                    <td className="px-6 py-4 font-medium text-slate-900 hover:cursor-pointer" onClick={() => window.location.pathname = "/contacts/"+c.contact_id}>
                                         {c.emergency_contact ? "Yes" : ""}
                                     </td>
                                 </tr>
@@ -87,6 +102,7 @@ export default function RelatedContacts({student}) {
             )}
 
             {modalOpen && <StudentContactQuickForm student={student} saveCallback={() => saveCallback(false)} cancelCallback={() => setModalOpen(false)}/>}
+            {showConfirmation && <ConfirmationModal title="Delete Relationship" message={"Delete relationship with "+showConfirmation.contact_first_name+"?"} onCancel={() => setShowConfirmation(null)} onConfirm={() => handleDelete(showConfirmation)}/>}
         </div>
     )
 }

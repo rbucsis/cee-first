@@ -6,7 +6,8 @@ from psycopg import AsyncConnection
 from core.auth import get_current_user
 from core.database import get_db_connection
 from schemas.files import FileResponse, FileRename
-from core.storage import write_file, read_file, delete_file_from_storage
+from core.storage import write_file, read_file, delete_file_from_storage, get_bucket
+from google.cloud import storage
 
 router = APIRouter(prefix="/api/v1", tags=["Files"])
 
@@ -18,10 +19,12 @@ router = APIRouter(prefix="/api/v1", tags=["Files"])
 async def create_file(
     center_id: UUID,
     file: Annotated[UploadFile, File()],
+    bucket: storage.Bucket = Depends(get_bucket),
     ref_table: Annotated[str, Form()] = None,
     ref_id: Annotated[str, Form()] = None,
     current_user: dict = Depends(get_current_user),
     db: AsyncConnection = Depends(get_db_connection),
+
 ):
     """Uploads a file for the current center"""
     user_id_str = str(current_user["id"])
@@ -42,7 +45,7 @@ async def create_file(
         if ref_id:
             path += f'{ref_id}/'
             
-        await write_file(file=file, path=path)
+        await write_file(file=file, path=path, bucket=bucket)
 
         await cur.execute(
             """
@@ -135,6 +138,7 @@ async def get_file(
 @router.get("/files/{file_id}/download", response_class=PlainTextResponse)
 async def get_file(
     file_id: str,
+    bucket: storage.Bucket = Depends(get_bucket),
     current_user: dict = Depends(get_current_user),
     db: AsyncConnection = Depends(get_db_connection),
 ):
@@ -172,7 +176,7 @@ async def get_file(
     if ref_id:
         path += f'{ref_id}/'
     path += file.get('file_name')
-    url = await read_file(path)
+    url = await read_file(file=path, bucket=bucket)
     return url
 
 
@@ -222,6 +226,7 @@ async def update_file(
 @router.delete("/files/{file_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_file(
     file_id: UUID,
+    bucket: storage.Bucket = Depends(get_bucket),
     current_user: dict = Depends(get_current_user),
     db: AsyncConnection = Depends(get_db_connection),
 ):
@@ -260,7 +265,7 @@ async def delete_file(
             path += f'{ref_id}/'
         path += file.get('file_name')
 
-        await delete_file_from_storage(path)
+        await delete_file_from_storage(path, bucket)
 
         await cur.execute(
             """

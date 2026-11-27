@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { apiFetch } from '@/lib/api';
 import Button from '@/components/ui/Button'
 import ContactQuickForm from '@/components/contacts/ContactQuickForm';
-import Link from 'next/link';
 
 const CENTER_ID = process.env.NEXT_PUBLIC_DEV_CENTER_ID;
 
